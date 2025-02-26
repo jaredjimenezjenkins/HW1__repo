@@ -1,0 +1,69 @@
+---
+title: "Exploring Spatial Data HW"
+author: "Jared Jimenez-Jenkins"
+output:
+  html_document:
+    df_print: paged
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code.
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*.
+
+# HW 1 Exploring Spatial Data
+
+### Here I read in the necessary packages.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library(sf)
+library(dplyr)
+library(ggplot2)
+```
+
+### I then read in my Github Homework 1 Repository link.
+
+```{r}
+rm(list = ls())
+
+myMapOnGit_link='https://github.com/jaredjimenezjenkins/HW1__repo/raw/refs/heads/main/countriesCIA%20(3).gpkg'
+
+library(sf)
+
+countriesCIA=read_sf(myMapOnGit_link, layer='cia')
+worldBorders=read_sf(myMapOnGit_link, layer='border')
+```
+
+##### Here I simply read in the names within the Countries CIA file.
+
+```{r}
+names(countriesCIA)
+```
+
+### I then compute to see which countries are doing best in terms of tobacco and alcohol use, as well as obesity rates.
+
+```{r}
+interestingCountries=countriesCIA[(countriesCIA$tobacco_code==0) & (countriesCIA$alcohol_code==0) & (countriesCIA$obesity_code==0),]
+interestingCountries
+```
+
+### Now we create a map in order to visualize these countries.
+
+```{r}
+maskToClip = as.vector(st_bbox(interestingCountries))
+
+base = ggplot() + 
+  geom_sf(data = interestingCountries, fill = 'yellow')
+
+base + 
+  coord_sf(xlim = c(maskToClip[1], maskToClip[3]), 
+           ylim = c(maskToClip[2], maskToClip[4])) +
+  geom_sf_text(data = interestingCountries,
+               aes(label = COUNTRY),
+               color = 'blue',
+               check_overlap = TRUE,
+               size = 3,
+               nudge_y = 0.15)
+```
+
+# The End!
